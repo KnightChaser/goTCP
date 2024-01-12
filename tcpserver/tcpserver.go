@@ -8,7 +8,7 @@ import (
 )
 
 // Handle client messages toward this server
-func clientHandler(connection net.Conn, clientRemoteAddress net.Addr) {
+func ClientHandler(connection net.Conn, clientRemoteAddress net.Addr) {
 	defer connection.Close()
 
 	clientDataReceiver := bufio.NewScanner(connection)
@@ -25,7 +25,7 @@ func clientHandler(connection net.Conn, clientRemoteAddress net.Addr) {
 }
 
 // Send a welcome message to the server
-func sendWelcomeMessageToClients(connection net.Conn) {
+func SendWelcomeMessageToClients(connection net.Conn) {
 	fmt.Fprintf(connection, "Hello, user!, welcome to the server.\n")
 }
 
@@ -49,8 +49,8 @@ func main() {
 			break
 		}
 		fmt.Printf("[+] A new connection from: %v\n", connection.RemoteAddr())
-		sendWelcomeMessageToClients(connection)
-		go clientHandler(connection, connection.RemoteAddr()) // Handle user request as goroutine
+		SendWelcomeMessageToClients(connection)
+		go ClientHandler(connection, connection.RemoteAddr()) // Handle user request as goroutine
 	}
 
 	fmt.Printf("[X] Server service(%s(protocol: %s)) terminated.\n", listeningAddressPort, protocol)
