@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 )
 
@@ -27,19 +28,22 @@ func main() {
 	protocol := "tcp"
 	accessingAddressPort := "127.0.0.1:7777" // localhost
 	connection, err := net.Dial(protocol, accessingAddressPort)
+
 	if err != nil {
 		fmt.Printf("Error while connecting %s(protocol: %s)\n", accessingAddressPort, protocol)
 		log.Fatal(err)
 		return
 	} else {
 		fmt.Printf("Connected to %s(protocol: %s)!\n", accessingAddressPort, protocol)
-		fmt.Println("Type anything to start!")
 	}
 	defer connection.Close()
 
 	// Read messages from the server, using goroutine
 	serverMessageChannel := make(chan string)
 	go ServerMessageReceiver(connection, serverMessageChannel)
+
+	var userInput string
+	username := ""
 
 	// Read the user input and send messages to the server
 	// select-casing go channels
@@ -51,15 +55,27 @@ func main() {
 				fmt.Printf("The connection to the server(%s(protocol: %s)) was closed.\n", accessingAddressPort, protocol)
 				return
 			}
-			fmt.Printf("Server says: %s\n", message)
+			fmt.Println(message)
 
 		default:
 			// Read user input and send messages to the server
-			var userInput string
-			fmt.Print("user input> ")
-			fmt.Scanln(&userInput)
+			// However, if the username is not set, set the username first(first setup).
+			if username == "" {
+				// If username is not set, set username
+				fmt.Print("Set your username> ")
+				usernameScanner := bufio.NewScanner(os.Stdin)
+				usernameScanner.Scan()
+				username = usernameScanner.Text()
+				fmt.Fprintf(connection, "%s", username) // Send the username to the server too
+			} else {
+				// If username is set, ready to chat!
+				fmt.Printf("You(%s): ", username)
+				userInputScanner := bufio.NewScanner(os.Stdin)
+				userInputScanner.Scan()
+				userInput = userInputScanner.Text()
+			}
 
-			// A special triggering keyword to terminate user connection
+			// A special triggering keyword to terminate the user connection
 			if strings.ToLower(userInput) == "!exit" {
 				fmt.Printf("Terminating %s connection with the server(%s)\n",
 					strings.ToUpper(protocol), accessingAddressPort)
