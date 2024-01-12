@@ -1,4 +1,9 @@
 # goTCP
+![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-%235391FE.svg?style=for-the-badge&logo=powershell&logoColor=white)
+![Shell Script](https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)
+
 A simple Go chatting application with TCP socket, based on the client-server model
 
 > Demonstration(picture)
@@ -17,16 +22,16 @@ This simple project is a simple real-time chat application(because it's simple, 
 
 * **Dockerized**: Server and client are encapsulated by docker. Because there are few lines of docker-related commands for every instance, this project provides a "one-stop script" that processes setting up, docker building, and docker execution at once
     * [x] Windows(Powershell script(`dockerbuild.ps1`))
-    * [ ] Linux(Shell script(`dockerbuild.sh`))
+    * [x] Linux(Shell script(`dockerbuild.sh`))
 
 
 ### Execution
-Because this project's theme is communicating with each other, the docker networking setup is very important. You just need to execute the "one-stop script" that this project provides
-* **Server**: `tcpserver\dockerbuild.ps1` (Only one instance is required, so execute this script only once at the same time.)
-* **Client**: `tcpclient\dockerbuild.ps1` (You may create client instances as many as you want.)
+Because this project's theme is communicating with each other, the docker networking setup is very important. You just need to execute the "one-stop script" that this project provides. **Support both Windows and Linux!**
+* **Server**: `tcpserver\dockerbuild.ps1` if **Windows**, `sudo bash tcpserver/dockerbuild.sh` if **Linux** (Only one instance is required, so execute this script only once at the same time.)
+* **Client**: `tcpclient\dockerbuild.ps1` if **Windows**, `sudo bash tcpclient/dockerbuild.sh` if **Linux** (You may create client instances as many as you want.)
 
 ### Docker setup explanation (networking)
-* **Server**
+* **Server** (Windows Powershell)
 ```powershell
 docker network remove goTCPnet
 docker network create goTCPnet --subnet=192.168.111.0/24
@@ -38,7 +43,7 @@ Because the server accepts clients' requests remotely, IP address and port setti
 listeningAddressPort := "192.168.111.111:7777"
 ```
 
-* **Client**
+* **Client** (Windows Powershell)
 ```powershell
 # Get the USERNAME from user input
 $USERNAME = Read-Host "Enter USERNAME "
@@ -58,5 +63,6 @@ Because the client (`tcpclient\tcpclient.go`) accepts username as an argument `-
 * Because this was made for learning how to make "something" with Go, Docker, Socket communication, and Github, the implementation is naive and not-so-professional, I kindly ask for your consideration.
 * Any contribution to this project is greatly appreciated.
 
+<br>
 
-`KnightChaser(Lee Garam)`
+**@KnightChaser**, a pro spaghetti chef in Gachon University, Cybersecurity department.
