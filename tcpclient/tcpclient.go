@@ -2,13 +2,35 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
+
+// Return the first 6 characters of the given string input
+// A hashcode identifier of the users, might be an identifier of users with same name
+func Sha256First6(input string) string {
+	hash := sha256.New()
+	hash.Write([]byte(input))
+	hashInBytes := hash.Sum(nil)
+	hashString := hex.EncodeToString(hashInBytes)
+	result := hashString[:6]
+
+	return result
+}
+
+func GenerateRandomNumber() int {
+	randomNumber := rand.Intn(100) + 1
+
+	return randomNumber
+}
 
 // Write user message on the data stream connected to the server
 func SendMessageToServer(connection net.Conn, message string) {
@@ -34,6 +56,10 @@ func main() {
 		fmt.Println("Please enter your username via -username option")
 		return
 	}
+
+	// Add a random seed value
+	randomSeed := strconv.Itoa(GenerateRandomNumber())
+	*username = fmt.Sprintf("%s#%s", *username, Sha256First6(randomSeed))
 
 	protocol := "tcp"
 	accessingAddressPort := "127.0.0.1:7777" // localhost
