@@ -45,6 +45,10 @@ func main() {
 	var userInput string
 	username := ""
 
+	// Scanner to capture user input
+	usernameScanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
+	userInputScanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
+
 	// Read the user input and send messages to the server
 	// select-casing go channels
 	for {
@@ -63,26 +67,28 @@ func main() {
 			if username == "" {
 				// If username is not set, set username
 				fmt.Print("Set your username> ")
-				usernameScanner := bufio.NewScanner(os.Stdin)
-				usernameScanner.Scan()
-				username = usernameScanner.Text()
-				fmt.Fprintf(connection, "%s", username) // Send the username to the server too
+				if usernameScanner.Scan() {
+					username = usernameScanner.Text()
+					fmt.Fprintf(connection, "%s\n", username) // Send the username to the server too
+				}
 			} else {
 				// If username is set, ready to chat!
-				fmt.Printf("You(%s): ", username)
-				userInputScanner := bufio.NewScanner(os.Stdin)
-				userInputScanner.Scan()
-				userInput = userInputScanner.Text()
-			}
+				fmt.Printf("%s(You): ", username)
 
-			// A special triggering keyword to terminate the user connection
-			if strings.ToLower(userInput) == "!exit" {
-				fmt.Printf("Terminating %s connection with the server(%s)\n",
-					strings.ToUpper(protocol), accessingAddressPort)
-				return
-			}
+				// Check if there's any input
+				if userInputScanner.Scan() {
+					userInput = userInputScanner.Text()
 
-			SendMessageToServer(connection, userInput)
+					// A special triggering keyword to terminate the user connection
+					if strings.ToLower(userInput) == "!exit" {
+						fmt.Printf("Terminating %s connection with the server(%s)\n",
+							strings.ToUpper(protocol), accessingAddressPort)
+						return
+					}
+
+					SendMessageToServer(connection, userInput)
+				}
+			}
 		}
 	}
 }

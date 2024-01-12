@@ -110,10 +110,10 @@ func ClientHandler(connection net.Conn, clientRemoteAddress net.Addr, connectedC
 
 	if err := clientDataReceiver.Err(); err != nil {
 		fmt.Printf("[!] Client(@%s/%v) disconnected abnormally, error: %v\n", username, clientRemoteAddress, err)
-		connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("User \"%s\" just left the chat (normally)\n", username))
+		connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("User \"%s\" just left the chat (normally)", username))
 	} else {
 		fmt.Printf("[-] Client(@%s/%v) disconnected normally\n", username, clientRemoteAddress)
-		connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("User \"%s\" just left the chat (normally)\n", username))
+		connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("User \"%s\" just left the chat (normally)", username))
 	}
 }
 
