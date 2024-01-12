@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -11,20 +12,29 @@ import (
 
 // Write user message on the data stream connected to the server
 func SendMessageToServer(connection net.Conn, message string) {
-	fmt.Fprintf(connection, "%s\n", message)
+	fmt.Fprintf(connection, "\n%s", message)
 }
 
 // Receive and print the message from the server
-func ServerMessageReceiver(connection net.Conn, serverMessageChannel chan string) {
+func ServerMessageReceiver(connection net.Conn, currentUsername string) {
 	serverMessageHandler := bufio.NewScanner(connection)
 	for serverMessageHandler.Scan() {
 		message := serverMessageHandler.Text()
-		serverMessageChannel <- message
+		fmt.Printf("%s\n", message)
 	}
-	close(serverMessageChannel)
 }
 
+// argument: username(string)
 func main() {
+
+	username := flag.String("username", "exampleUser", "Your own username for chatting")
+	flag.Parse()
+
+	if *username == "" {
+		fmt.Println("Please enter your username via -username option")
+		return
+	}
+
 	protocol := "tcp"
 	accessingAddressPort := "127.0.0.1:7777" // localhost
 	connection, err := net.Dial(protocol, accessingAddressPort)
@@ -35,60 +45,33 @@ func main() {
 		return
 	} else {
 		fmt.Printf("Connected to %s(protocol: %s)!\n", accessingAddressPort, protocol)
+		fmt.Fprintf(connection, "%s\n", *username) // send the server about username
 	}
 	defer connection.Close()
 
-	// Read messages from the server, using goroutine
-	serverMessageChannel := make(chan string)
-	go ServerMessageReceiver(connection, serverMessageChannel)
+	go ServerMessageReceiver(connection, *username)
 
 	var userInput string
-	username := ""
 
 	// Scanner to capture user input
-	usernameScanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
 	userInputScanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
 
-	// Read the user input and send messages to the server
-	// select-casing go channels
 	for {
-		select {
-		case message, ok := <-serverMessageChannel:
-			if !ok {
-				// Server messages channel closed, exit
-				fmt.Printf("The connection to the server(%s(protocol: %s)) was closed.\n", accessingAddressPort, protocol)
+		// If username is set, ready to chat!
+		fmt.Printf("%s(You): ", *username)
+
+		// Check if there's any input
+		if userInputScanner.Scan() {
+			userInput = userInputScanner.Text()
+
+			// A special triggering keyword to terminate the user connection
+			if strings.ToLower(userInput) == "!exit" {
+				fmt.Printf("Terminating %s connection with the server(%s)\n",
+					strings.ToUpper(protocol), accessingAddressPort)
 				return
 			}
-			fmt.Println(message)
 
-		default:
-			// Read user input and send messages to the server
-			// However, if the username is not set, set the username first(first setup).
-			if username == "" {
-				// If username is not set, set username
-				fmt.Print("Set your username> ")
-				if usernameScanner.Scan() {
-					username = usernameScanner.Text()
-					fmt.Fprintf(connection, "%s\n", username) // Send the username to the server too
-				}
-			} else {
-				// If username is set, ready to chat!
-				fmt.Printf("%s(You): ", username)
-
-				// Check if there's any input
-				if userInputScanner.Scan() {
-					userInput = userInputScanner.Text()
-
-					// A special triggering keyword to terminate the user connection
-					if strings.ToLower(userInput) == "!exit" {
-						fmt.Printf("Terminating %s connection with the server(%s)\n",
-							strings.ToUpper(protocol), accessingAddressPort)
-						return
-					}
-
-					SendMessageToServer(connection, userInput)
-				}
-			}
+			SendMessageToServer(connection, userInput)
 		}
 	}
 }

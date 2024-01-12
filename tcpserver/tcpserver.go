@@ -71,7 +71,7 @@ func (connectedClientPool *ConnectedClientPool) BroadcastMessage(senderAddress n
 	for userRemoteAddress, user := range connectedClientPool.clients {
 		// Exclude OP
 		if senderAddress != userRemoteAddress {
-			fmt.Fprintf(user.connection, "%s: %s\n", user.username, message)
+			fmt.Fprintf(user.connection, "%s\n", message)
 		}
 	}
 }
@@ -105,7 +105,7 @@ func ClientHandler(connection net.Conn, clientRemoteAddress net.Addr, connectedC
 	for clientDataReceiver.Scan() {
 		message := clientDataReceiver.Text()
 		fmt.Printf("[~] Client(@%s/%v) said => %s\n", username, clientRemoteAddress, message)
-		connectedClientPool.BroadcastMessage(clientRemoteAddress, message)
+		connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("%s: %s", username, message))
 	}
 
 	if err := clientDataReceiver.Err(); err != nil {
@@ -147,7 +147,6 @@ func main() {
 
 		clientRemoteAddress := connection.RemoteAddr()
 		fmt.Printf("[+] A new connection from: %v\n", clientRemoteAddress)
-		SendMessageToClients(connection, "Hello, user!, welcome to the server.") // first welcoming message to the user
 
 		go ClientHandler(connection, clientRemoteAddress, connectedClientPool) // Handle user request as goroutine
 	}
