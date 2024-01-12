@@ -12,7 +12,7 @@ import (
 
 // Write user message on the data stream connected to the server
 func SendMessageToServer(connection net.Conn, message string) {
-	fmt.Fprintf(connection, "\n%s", message)
+	fmt.Fprintf(connection, "%s\n", message)
 }
 
 // Receive and print the message from the server
@@ -54,11 +54,11 @@ func main() {
 	var userInput string
 
 	// Scanner to capture user input
-	userInputScanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
+	userInputScanner := bufio.NewScanner(os.Stdin)
 
 	for {
 		// If username is set, ready to chat!
-		fmt.Printf("%s(You): ", *username)
+		fmt.Printf("You(%s)> ", *username)
 
 		// Check if there's any input
 		if userInputScanner.Scan() {
