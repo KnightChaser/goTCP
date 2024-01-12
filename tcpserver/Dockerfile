@@ -8,4 +8,5 @@ RUN go build -o tcpserver tcpserver.go
 
 FROM scratch
 COPY --from=gobuilder /build .
+EXPOSE 7777
 ENTRYPOINT [ "./tcpserver" ]

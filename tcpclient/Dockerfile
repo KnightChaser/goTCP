@@ -8,6 +8,6 @@ RUN go build -o tcpclient tcpclient.go
 
 FROM scratch
 COPY --from=gobuilder /build .
-ARG USERNAME
-ENV USERNAME=$USERNAME
-ENTRYPOINT [ "./tcpclient", "-username", "$USERNAME" ]
+# ARG USERNAME
+# ENV USERNAME $USERNAME
+# ENTRYPOINT [ "./tcpclient", "-username", ${USERNAME} ]

@@ -62,7 +62,7 @@ func main() {
 	*username = fmt.Sprintf("%s#%s", *username, Sha256First6(randomSeed))
 
 	protocol := "tcp"
-	accessingAddressPort := "127.0.0.1:7777" // localhost
+	accessingAddressPort := "192.168.111.111:7777" // localhost
 	connection, err := net.Dial(protocol, accessingAddressPort)
 
 	if err != nil {
