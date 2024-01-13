@@ -136,8 +136,8 @@ func SendMessageToClients(connection net.Conn, message string) {
 func main() {
 	// Open up the server
 	protocol := "tcp"
-	listeningAddressPort := "127.0.0.1:7777" // localhost
-	// listeningAddressPort := "192.168.111.111:7777"
+	// listeningAddressPort := "127.0.0.1:7777" // localhost
+	listeningAddressPort := "192.168.111.111:7777" // docker setup
 	listener, err := net.Listen(protocol, listeningAddressPort)
 	if err != nil {
 		fmt.Println("[!] Error while listening the server")
