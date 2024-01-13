@@ -4,7 +4,7 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-%235391FE.svg?style=for-the-badge&logo=powershell&logoColor=white)
 ![Shell Script](https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
-A simple Go chatting application with TCP socket, based on the client-server model
+A simple **real time** multiuser chatting application with TCP socket, based on the client-server model, built with Go. Every instance is dockerized and automated by scripts for rapid setup.
 
 > Demonstration(picture)
 ![img](./READMEasset/figure1.png)
