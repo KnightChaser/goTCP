@@ -76,6 +76,16 @@ func (connectedClientPool *ConnectedClientPool) BroadcastMessage(senderAddress n
 	}
 }
 
+// Broadcast received message to every user even include OP
+func (connectedClientPool *ConnectedClientPool) BroadcastMessageIncludeOP(message string) {
+	connectedClientPool.mutex.Lock()
+	defer connectedClientPool.mutex.Unlock()
+
+	for _, user := range connectedClientPool.clients {
+		fmt.Fprintf(user.connection, "%s\n", message)
+	}
+}
+
 // Handle client messages toward this server
 func ClientHandler(connection net.Conn, clientRemoteAddress net.Addr, connectedClientPool *ConnectedClientPool) {
 	// When the user terminates its session, proceed with the cleaning user information procedure
@@ -105,7 +115,8 @@ func ClientHandler(connection net.Conn, clientRemoteAddress net.Addr, connectedC
 	for clientDataReceiver.Scan() {
 		message := clientDataReceiver.Text()
 		fmt.Printf("[~] Client(@%s/%v) said => %s\n", username, clientRemoteAddress, message)
-		connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("%s: %s", username, message))
+		// connectedClientPool.BroadcastMessage(clientRemoteAddress, fmt.Sprintf("%s: %s", username, message))
+		connectedClientPool.BroadcastMessageIncludeOP(fmt.Sprintf("%s: %s", username, message)) // Client program only use data from the server, even message from the client itself.
 	}
 
 	if err := clientDataReceiver.Err(); err != nil {
@@ -125,8 +136,8 @@ func SendMessageToClients(connection net.Conn, message string) {
 func main() {
 	// Open up the server
 	protocol := "tcp"
-	// listeningAddressPort := "127.0.0.1:7777" // localhost
-	listeningAddressPort := "192.168.111.111:7777"
+	listeningAddressPort := "127.0.0.1:7777" // localhost
+	// listeningAddressPort := "192.168.111.111:7777"
 	listener, err := net.Listen(protocol, listeningAddressPort)
 	if err != nil {
 		fmt.Println("[!] Error while listening the server")

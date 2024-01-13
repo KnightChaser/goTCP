@@ -12,6 +12,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/gosuri/uilive"
+	"github.com/inancgumus/screen"
 )
 
 // Return the first 6 characters of the given string input
@@ -37,13 +40,29 @@ func SendMessageToServer(connection net.Conn, message string) {
 	fmt.Fprintf(connection, "%s\n", message)
 }
 
-// Receive and print the message from the server
-func ServerMessageReceiver(connection net.Conn, currentUsername string) {
+// Receive and print the message from the server,
+// and print the data on the console appropriately
+func ConsoleMessageHandler(connection net.Conn, currentUsername string) {
+	var messageFromServerList []string
 	serverMessageHandler := bufio.NewScanner(connection)
+	consoleUILiveWriter := uilive.New() // auto refreshing feature the console
+	consoleUILiveWriter.Start()
+
 	for serverMessageHandler.Scan() {
 		message := serverMessageHandler.Text()
-		fmt.Printf("%s\n", message)
+		messageFromServerList = append(messageFromServerList, message)
+
+		// Refreshing the console
+		var currentlyPrintedDataOnConsole string
+		for _, messageLine := range messageFromServerList {
+			currentlyPrintedDataOnConsole = fmt.Sprintf("%s\n%s", currentlyPrintedDataOnConsole, messageLine)
+		}
+		// Provide user interface to continue typing...
+		currentlyPrintedDataOnConsole = fmt.Sprintf("%s\nYou(%s)> ", currentlyPrintedDataOnConsole, currentUsername)
+		fmt.Fprintf(consoleUILiveWriter, currentlyPrintedDataOnConsole)
+		consoleUILiveWriter.Flush()
 	}
+	consoleUILiveWriter.Stop()
 }
 
 // argument: username(string)
@@ -62,7 +81,8 @@ func main() {
 	*username = fmt.Sprintf("%s#%s", *username, Sha256First6(randomSeed))
 
 	protocol := "tcp"
-	accessingAddressPort := "192.168.111.111:7777" // localhost
+	accessingAddressPort := "127.0.0.1:7777" // localhost
+	// accessingAddressPort := "192.168.111.111:7777" // docker standard
 	connection, err := net.Dial(protocol, accessingAddressPort)
 
 	if err != nil {
@@ -75,16 +95,17 @@ func main() {
 	}
 	defer connection.Close()
 
-	go ServerMessageReceiver(connection, *username)
+	go ConsoleMessageHandler(connection, *username)
 
 	var userInput string
 
 	// Scanner to capture user input
 	userInputScanner := bufio.NewScanner(os.Stdin)
 
+	// If username is set, ready to chat!
+	fmt.Printf("You are \"%s\". Hit the first message! > ", *username)
+
 	for {
-		// If username is set, ready to chat!
-		fmt.Printf("You(%s)> ", *username)
 
 		// Check if there's any input
 		if userInputScanner.Scan() {
@@ -97,6 +118,8 @@ func main() {
 				return
 			}
 
+			screen.Clear()
+			screen.MoveTopLeft()
 			SendMessageToServer(connection, userInput)
 		}
 	}
