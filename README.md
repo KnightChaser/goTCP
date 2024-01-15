@@ -18,7 +18,7 @@ This simple project is a simple real-time chat application(because it's simple, 
 
 * **Username Registration**: Users are prompted to set a username when connecting to the server. This username is used to identify users in the chat.
 
-* **Graceful Termination**: Users can terminate their connection gracefully by typing `!exit` in the client interface, triggering a clean disconnection from the server.
+* **Graceful Termination**: Users can terminate their connection gracefully by typing `!exit` in the client interface, triggering a clean disconnection from the server. In server, you can just stop server process via hitting `[ctrl]+[c]` keybinding. It will gracefully terminate the whole session.
 
 * **Dockerized**: Server and client are encapsulated by docker. Because there are few lines of docker-related commands for every instance, this project provides a "one-stop script" that processes setting up, docker building, and docker execution at once
     * [x] Windows(Powershell script(`dockerbuild.ps1`))
