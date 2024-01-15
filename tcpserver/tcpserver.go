@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 )
 
 // An object representing a single connected user
@@ -134,6 +137,11 @@ func SendMessageToClients(connection net.Conn, message string) {
 }
 
 func main() {
+
+	// Set up signal handling for graceful exit
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT)
+
 	// Open up the server
 	protocol := "tcp"
 	// listeningAddressPort := "127.0.0.1:7777" // localhost
@@ -149,6 +157,24 @@ func main() {
 	// Ready to open the server
 	connectedClientPool := CreateConnectedClientPool()
 	fmt.Printf("[O] The server is now listening from %s(protocol: %s)\n", listeningAddressPort, protocol)
+
+	// [Ctrl]+[C] interruption handling for graceful exit
+	go func() {
+		// Accept key binding
+		<-signalChannel
+
+		// Alerting
+		fmt.Println("[!] Ctrl+C(Interruption) signal detected. Gracefully exiting server operation...")
+		connectedClientPool.BroadcastMessageIncludeOP(fmt.Sprintf("== The server(%s) was terminated its operation... Goodbye. ==", listeningAddressPort))
+
+		// Disconnect every connected sessions
+		for _, client := range connectedClientPool.clients {
+			fmt.Printf("[-] User session %s is now disconnected...\n", client.username)
+			client.connection.Close()
+		}
+		os.Exit(0)
+	}()
+
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
